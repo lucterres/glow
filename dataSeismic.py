@@ -6,7 +6,7 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 import os
-import directories as ct
+import dir_local as ct
 
 #Seismic image parameters
 data_mean = 0.4746
