@@ -19,6 +19,8 @@ from models import Glow
 from tqdm import tqdm
 
 
+root = "D:\_0Luciano\_0PHD\datasets"
+
 def main(args):
     # Set up main device and scale batch size
     device = 'cuda' if torch.cuda.is_available() and args.gpu_ids else 'cpu'
@@ -40,7 +42,7 @@ def main(args):
         transforms.ToTensor()
     ])
 
-    trainset = torchvision.datasets.CIFAR10(root='data', train=True, download=True, transform=transform_train)
+    trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=True, transform=transform_train)
     trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     testset = torchvision.datasets.CIFAR10(root='data', train=False, download=True, transform=transform_test)
