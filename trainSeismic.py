@@ -178,7 +178,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=0, help='Random seed for reproducibility')
     parser.add_argument('--warm_up', default=500000, type=int, help='Number of steps for lr warm-up')
 
-    best_loss = 0
+    best_loss = 15000
     global_step = 0
 
     main(parser.parse_args())
