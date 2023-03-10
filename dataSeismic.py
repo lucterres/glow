@@ -45,7 +45,7 @@ class SeismicImageDataset(Dataset):
             image = self.transform(image)
         return image, label
 
-transform = T.Compose([T.Resize((40 , 40)),
+transform = T.Compose([T.Resize((48 , 48)),
                        T.Grayscale(num_output_channels=1),
                        T.ToTensor()
                        #,T.Normalize(data_mean, data_std, inplace=False) 
