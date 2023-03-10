@@ -40,10 +40,15 @@ def main(args):
         transforms.ToTensor()
     ])
 
-    trainset = torchvision.datasets.CIFAR10(root='data', train=True, download=True, transform=transform_train)
+    trainset = torchvision.datasets.CIFAR10(root='E:\Luciano\_0PH\Datasets\CIFAR', train=True, download=True, transform=transform_train)
+    import torch.utils.data as data_utils
+    indices = torch.arange(5000)
+    trainset = data_utils.Subset(trainset, indices)
     trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
-    testset = torchvision.datasets.CIFAR10(root='data', train=False, download=True, transform=transform_test)
+    testset = torchvision.datasets.CIFAR10(root='E:\Luciano\_0PH\Datasets\CIFAR', train=False, download=True, transform=transform_test)
+    ind = torch.arange(1000)
+    testset = data_utils.Subset(testset, ind)
     testloader = data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
     # Model
