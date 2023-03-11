@@ -78,7 +78,11 @@ def main(args):
     for epoch in range(start_epoch, start_epoch + args.num_epochs):
         train(epoch, net, trainloader, device, optimizer, scheduler,
               loss_fn, args.max_grad_norm)
-        test(epoch, net, testloader, device, loss_fn, args.num_samples)
+        lastLossAvg = test(epoch, net, testloader, device, loss_fn, args.num_samples)
+        stopCheck = lastLossAvg / best_loss
+        if stopCheck>100:
+            print ("Divergindo... Criterio de Parada Atingido")
+            break
 
 
 @torch.enable_grad()
@@ -155,6 +159,7 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
     os.makedirs('samples', exist_ok=True)
     images_concat = torchvision.utils.make_grid(images, nrow=int(num_samples ** 0.5), padding=2, pad_value=255)
     torchvision.utils.save_image(images_concat, 'samples/epoch_{}.png'.format(epoch))
+    return loss_meter.avg
 
 
 if __name__ == '__main__':

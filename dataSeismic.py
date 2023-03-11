@@ -44,21 +44,23 @@ class SeismicImageDataset(Dataset):
         if self.transform:
             image = self.transform(image)
         return image, label
+    
 
-transform = T.Compose([T.Resize((48 , 48)),
+# Custom Dataset Partition
+batch_size = 100
+transform = T.Compose([T.Resize((40 , 40)),
                        T.Grayscale(num_output_channels=1),
+                       T.RandomHorizontalFlip(),
                        T.ToTensor()
                        #,T.Normalize(data_mean, data_std, inplace=False) 
                      ])
 
 full_dataset = SeismicImageDataset(ct.TRAIN_NOT_NULLCSV,ct.TRAIN_IMAGE_DIR, transform)
-
-# Custom Dataset Partition
-batch_size = 64
 dataset_size = len(full_dataset)
 validation_split = .15
 random_seed= 42
 split = int(np.floor(dataset_size * validation_split))
+
 
 # new splitted datasets 
 # https://bit.ly/3kyZooA   How to split a custom dataset into training and test datasets
