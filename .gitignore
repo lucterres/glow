@@ -6,3 +6,4 @@ data/
 logs/
 ckpts/
 dir_local.py
+samples/
