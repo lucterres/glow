@@ -14,7 +14,6 @@ data_std = 0.1526
 
 # amplitude for the noise augmentation
 augm_sigma = 0.08
-data_dir = ct.root  #'mnist_data'
 
 def unnormalize(x):
     '''go from normaized data x back to the original range'''
@@ -55,7 +54,7 @@ transform = T.Compose([T.Resize((40 , 40)),
                        #,T.Normalize(data_mean, data_std, inplace=False) 
                      ])
 
-full_dataset = SeismicImageDataset(ct.TRAIN_NOT_NULLCSV,ct.TRAIN_IMAGE_DIR, transform)
+full_dataset = SeismicImageDataset(ct.TEST_NOT_NULLCSV,ct.TRAIN_IMAGE_DIR, transform)
 dataset_size = len(full_dataset)
 validation_split = .15
 random_seed= 42
