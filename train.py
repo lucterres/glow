@@ -1,6 +1,9 @@
-"""Train Glow on CIFAR-10.
+""" 
+    Train Glow on CIFAR-10.
+    Train script adapted from: https://github.com/kuangliu/pytorch-cifar/
 
-Train script adapted from: https://github.com/kuangliu/pytorch-cifar/
+
+    python train.py --num_workers=4 --batch_size=20 em casa I3 Nvidea $gb
 """
 import argparse
 import numpy as np
@@ -42,10 +45,17 @@ def main(args):
         transforms.ToTensor()
     ])
 
-    trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=True, transform=transform_train)
+    import torch.utils.data as data_utils
+
+    indices = torch.arange(10000)
+    trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=False, transform=transform_train)
+    trainset = data_utils.Subset(trainset, indices)
+
     trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
-    testset = torchvision.datasets.CIFAR10(root='data', train=False, download=True, transform=transform_test)
+    testset = torchvision.datasets.CIFAR10(root=root, train=False, download=False, transform=transform_test)
+    indices = torch.arange(1000)
+    testset = data_utils.Subset(testset, indices)
     testloader = data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
     # Model
@@ -175,7 +185,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_samples', default=64, type=int, help='Number of samples at test time')
     parser.add_argument('--num_workers', default=8, type=int, help='Number of data loader threads')
     parser.add_argument('--resume', type=str2bool, default=False, help='Resume from checkpoint')
-    parser.add_argument('--seed', type=int, default=0, help='Random seed for reproducibility')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
     parser.add_argument('--warm_up', default=500000, type=int, help='Number of steps for lr warm-up')
 
     best_loss = 0

@@ -13,6 +13,7 @@ import torch.backends.cudnn as cudnn
 import torch.utils.data as data
 import torchvision
 import torchvision.transforms as transforms
+from models.glow import glow1channelGray
 import util
 import dataSeismic as ds
 
@@ -50,7 +51,7 @@ def main(args):
 
     # Model
     print('Building model..')
-    net = Glow(num_channels=args.num_channels,
+    net = glow1channelGray(num_channels=args.num_channels,
                num_levels=args.num_levels,
                num_steps=args.num_steps)
     net = net.to(device)
