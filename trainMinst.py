@@ -14,11 +14,12 @@ import torch.utils.data as data
 import torchvision
 import torchvision.transforms as transforms
 import util
-import dataSeismic as ds
 
 from models import Glow
 from tqdm import tqdm
 
+
+root = r"E:\Luciano\_0PH\Datasets"
 
 def main(args):
     # Set up main device and scale batch size
@@ -41,12 +42,11 @@ def main(args):
         transforms.ToTensor()
     ])
 
-    trainset = ds.train_dataset 
-    trainloader = ds.train_loader 
+    trainset = torchvision.datasets.MNIST(root, train=True, download=False, transform=transform_train)
+    trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
-
-    testset = ds.valid_dataset
-    testloader = ds.valid_loader
+    testset = torchvision.datasets.MNIST(root, train=False, download=False, transform=transform_test)
+    testloader = data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
     # Model
     print('Building model..')
@@ -78,11 +78,7 @@ def main(args):
     for epoch in range(start_epoch, start_epoch + args.num_epochs):
         train(epoch, net, trainloader, device, optimizer, scheduler,
               loss_fn, args.max_grad_norm)
-        lastLossAvg = test(epoch, net, testloader, device, loss_fn, args.num_samples)
-        stopCheck = lastLossAvg / best_loss
-        if stopCheck>100:
-            print ("Divergindo... Criterio de Parada Atingido")
-            #break
+        test(epoch, net, testloader, device, loss_fn, args.num_samples)
 
 
 @torch.enable_grad()
@@ -120,7 +116,7 @@ def sample(net, batch_size, device):
         batch_size (int): Number of samples to generate.
         device (torch.device): Device to use.
     """
-    z = torch.randn((batch_size, 1, 32, 32), dtype=torch.float32, device=device)
+    z = torch.randn((batch_size, 3, 32, 32), dtype=torch.float32, device=device)
     x, _ = net(z, reverse=True)
     x = torch.sigmoid(x)
 
@@ -159,7 +155,6 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
     os.makedirs('samples', exist_ok=True)
     images_concat = torchvision.utils.make_grid(images, nrow=int(num_samples ** 0.5), padding=2, pad_value=255)
     torchvision.utils.save_image(images_concat, 'samples/epoch_{}.png'.format(epoch))
-    return loss_meter.avg
 
 
 if __name__ == '__main__':
@@ -183,7 +178,7 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=0, help='Random seed for reproducibility')
     parser.add_argument('--warm_up', default=500000, type=int, help='Number of steps for lr warm-up')
 
-    best_loss = 15000
+    best_loss = 0
     global_step = 0
 
     main(parser.parse_args())

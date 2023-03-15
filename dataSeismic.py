@@ -46,8 +46,8 @@ class SeismicImageDataset(Dataset):
     
 
 # Custom Dataset Partition
-batch_size = 100
-transform = T.Compose([T.Resize((40 , 40)),
+batch_size = 128
+transform = T.Compose([T.Resize((32 , 32)),
                        T.Grayscale(num_output_channels=1),
                        T.RandomHorizontalFlip(),
                        T.ToTensor()
@@ -63,9 +63,9 @@ split = int(np.floor(dataset_size * validation_split))
 
 # new splitted datasets 
 # https://bit.ly/3kyZooA   How to split a custom dataset into training and test datasets
-valid_size = split
-train_size = dataset_size - split
-train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_size, valid_size])
+valid_split = split
+train_split = dataset_size - split
+train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_split, valid_split])
 
 # Sample a fixed batch of 200 validation examples (split=validationSamples)
 val_x, val_l = zip(*list(valid_dataset[i] for i in range(split)))
