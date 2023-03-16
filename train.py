@@ -22,7 +22,8 @@ from models import Glow
 from tqdm import tqdm
 
 
-root = "D:\_0Luciano\_0PHD\datasets"
+root = r"E:\Luciano\_0PH\Datasets\CIFAR"
+
 
 def main(args):
     # Set up main device and scale batch size
@@ -54,8 +55,8 @@ def main(args):
     trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     testset = torchvision.datasets.CIFAR10(root=root, train=False, download=False, transform=transform_test)
-    indices = torch.arange(1000)
-    testset = data_utils.Subset(testset, indices)
+    #indices = torch.arange(1000)
+    #testset = data_utils.Subset(testset, indices)
     testloader = data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
     # Model
@@ -88,8 +89,11 @@ def main(args):
     for epoch in range(start_epoch, start_epoch + args.num_epochs):
         train(epoch, net, trainloader, device, optimizer, scheduler,
               loss_fn, args.max_grad_norm)
-        test(epoch, net, testloader, device, loss_fn, args.num_samples)
-
+        lastLossAvg = test(epoch, net, testloader, device, loss_fn, args.num_samples)
+        stopCheck = lastLossAvg / best_loss
+        if stopCheck>100:
+            print ("Divergindo... Criterio de Parada Atingido")
+            break
 
 @torch.enable_grad()
 def train(epoch, net, trainloader, device, optimizer, scheduler, loss_fn, max_grad_norm):
@@ -165,6 +169,7 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
     os.makedirs('samples', exist_ok=True)
     images_concat = torchvision.utils.make_grid(images, nrow=int(num_samples ** 0.5), padding=2, pad_value=255)
     torchvision.utils.save_image(images_concat, 'samples/epoch_{}.png'.format(epoch))
+    return loss_meter.avg
 
 
 if __name__ == '__main__':
@@ -185,10 +190,10 @@ if __name__ == '__main__':
     parser.add_argument('--num_samples', default=64, type=int, help='Number of samples at test time')
     parser.add_argument('--num_workers', default=8, type=int, help='Number of data loader threads')
     parser.add_argument('--resume', type=str2bool, default=False, help='Resume from checkpoint')
-    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
+    parser.add_argument('--seed', type=int, default=0, help='Random seed for reproducibility')
     parser.add_argument('--warm_up', default=500000, type=int, help='Number of steps for lr warm-up')
 
-    best_loss = 0
+    best_loss = 1500000
     global_step = 0
 
     main(parser.parse_args())
