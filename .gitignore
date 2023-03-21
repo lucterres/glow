@@ -4,8 +4,8 @@ __pycache__
 .texpadtmp/
 data/
 logs/
-ckpts/
-samples/
+ckpts*
+samples*
 dir_local.py
 
 /.vs

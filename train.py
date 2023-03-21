@@ -22,7 +22,8 @@ from models import Glow
 from tqdm import tqdm
 
 
-root = "D:\_0Luciano\_0PHD\datasets"
+root = r"data"
+
 
 def main(args):
     # Set up main device and scale batch size
@@ -47,14 +48,14 @@ def main(args):
 
     import torch.utils.data as data_utils
 
-    indices = torch.arange(10000)
+    indices = torch.arange(49500)
     trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=False, transform=transform_train)
     trainset = data_utils.Subset(trainset, indices)
 
     trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     testset = torchvision.datasets.CIFAR10(root=root, train=False, download=False, transform=transform_test)
-    indices = torch.arange(1000)
+    indices = torch.arange(9900)
     testset = data_utils.Subset(testset, indices)
     testloader = data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
@@ -84,12 +85,18 @@ def main(args):
     loss_fn = util.NLLLoss().to(device)
     optimizer = optim.Adam(net.parameters(), lr=args.lr)
     scheduler = sched.LambdaLR(optimizer, lambda s: min(1., s / args.warm_up))
-
+    stop=0
     for epoch in range(start_epoch, start_epoch + args.num_epochs):
         train(epoch, net, trainloader, device, optimizer, scheduler,
               loss_fn, args.max_grad_norm)
-        test(epoch, net, testloader, device, loss_fn, args.num_samples)
-
+        lastLossAvg = test(epoch, net, testloader, device, loss_fn, args.num_samples)
+        stopCheck = lastLossAvg / best_loss
+        if stopCheck>100:
+            print ("Divergindo... Criterio de Parada Atingido")
+            if stop>0:
+                print (stop)
+                #break  #divergiu duas vezes
+            stop=+1
 
 @torch.enable_grad()
 def train(epoch, net, trainloader, device, optimizer, scheduler, loss_fn, max_grad_norm):
@@ -164,7 +171,8 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
     images = sample(net, num_samples, device)
     os.makedirs('samples', exist_ok=True)
     images_concat = torchvision.utils.make_grid(images, nrow=int(num_samples ** 0.5), padding=2, pad_value=255)
-    torchvision.utils.save_image(images_concat, 'samples/epoch_{}.png'.format(epoch))
+    torchvision.utils.save_image(images_concat, 'samples/epoch_{epoc}_{loss}.png'.format(epoc=epoch,loss=int(loss_meter.avg)))
+    return loss_meter.avg
 
 
 if __name__ == '__main__':
@@ -182,13 +190,13 @@ if __name__ == '__main__':
     parser.add_argument('--num_levels', '-L', default=3, type=int, help='Number of levels in the Glow model')
     parser.add_argument('--num_steps', '-K', default=32, type=int, help='Number of steps of flow in each level')
     parser.add_argument('--num_epochs', default=100, type=int, help='Number of epochs to train')
-    parser.add_argument('--num_samples', default=64, type=int, help='Number of samples at test time')
+    parser.add_argument('--num_samples', default=25, type=int, help='Number of samples at test time')
     parser.add_argument('--num_workers', default=8, type=int, help='Number of data loader threads')
     parser.add_argument('--resume', type=str2bool, default=False, help='Resume from checkpoint')
-    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility')
+    parser.add_argument('--seed', type=int, default=0, help='Random seed for reproducibility')
     parser.add_argument('--warm_up', default=500000, type=int, help='Number of steps for lr warm-up')
 
-    best_loss = 0
+    best_loss = 1500000
     global_step = 0
 
     main(parser.parse_args())
