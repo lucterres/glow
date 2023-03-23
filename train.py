@@ -21,8 +21,10 @@ import util
 from models import Glow
 from tqdm import tqdm
 
+import dir_local as dl
 
-root = r"data/"
+
+root = dl.root
 
 
 def main(args):
