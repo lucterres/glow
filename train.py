@@ -25,7 +25,7 @@ import dir_local as dl
 
 
 root = dl.root
-folder = dl.folder
+folder = dl.folder + str(int(1000*random.random()))
 
 
 def main(args):
@@ -97,11 +97,11 @@ def main(args):
               loss_fn, args.max_grad_norm)
         lastLossAvg = test(epoch, net, testloader, device, loss_fn, args.num_samples)
         stopCheck = lastLossAvg / best_loss
-        if stopCheck>100:
+        if stopCheck>1000:
             print ("Divergindo... Criterio de Parada Atingido")
-            if stop>0:
-                print (stop)
-                #break  #divergiu duas vezes
+            if stop>4:
+                print ("Divergiu varias vezes: ", stop)
+                break 
             stop=+1
 
 @torch.enable_grad()
