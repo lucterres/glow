@@ -22,7 +22,7 @@ from models import Glow
 from tqdm import tqdm
 
 
-root = r"/tmp/data"
+root = r"data/"
 
 
 def main(args):
@@ -48,14 +48,17 @@ def main(args):
 
     import torch.utils.data as data_utils
 
-    indices = torch.arange(49500)
+    trainMax= int(50000/args.batch_size)*args.batch_size
+    testMax = int(10000/args.batch_size)*args.batch_size
+
+    indices = torch.arange(trainMax)
     trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=True, transform=transform_train)
     trainset = data_utils.Subset(trainset, indices)
 
     trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
     testset = torchvision.datasets.CIFAR10(root=root, train=False, download=True, transform=transform_test)
-    indices = torch.arange(9900)
+    indices = torch.arange(testMax)
     testset = data_utils.Subset(testset, indices)
     testloader = data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
