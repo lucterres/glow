@@ -168,10 +168,13 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
         best_loss = loss_meter.avg
 
     # Save samples and data
+    folder='z:/experiment/samples'+ str(int(1000*random()))
+    filename = folder +'/epoch_{}_{}.png'.format(epoch,str(int(loss_meter.avg)))
     images = sample(net, num_samples, device)
-    os.makedirs('samples', exist_ok=True)
+
+    os.makedirs(folder, exist_ok=True)
     images_concat = torchvision.utils.make_grid(images, nrow=int(num_samples ** 0.5), padding=2, pad_value=255)
-    torchvision.utils.save_image(images_concat, 'samples/epoch_{}.png'.format(epoch))
+    torchvision.utils.save_image(images_concat, filename)
     return loss_meter.avg
 
 
