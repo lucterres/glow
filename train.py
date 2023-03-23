@@ -154,12 +154,13 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
             z, sldj = net(x, reverse=False)
             loss = loss_fn(z, sldj)
             loss_meter.update(loss.item(), x.size(0))
-            progress_bar.set_postfix(nll=loss_meter.avg,
-                                     bpd=util.bits_per_dim(x, loss_meter.avg))
+            progress_bar.set_postfix(nll=loss_meter.avg, bpd=util.bits_per_dim(x, loss_meter.avg))
             progress_bar.update(x.size(0))
 
     # Save checkpoint
+    best=""
     if loss_meter.avg < best_loss:
+        best="_best"
         print('Saving...')
         state = {
             'net': net.state_dict(),
@@ -171,10 +172,13 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
         best_loss = loss_meter.avg
 
     # Save samples and data
+    folder = "z:/experiment/samples"+ str(int(1000*random.random()))
+    filename = folder + '/e{}_l{}{}.png'.format(epoch,str(int(loss_meter.avg)),best)
     images = sample(net, num_samples, device)
-    os.makedirs('samples', exist_ok=True)
+
+    os.makedirs(folder, exist_ok=True)
     images_concat = torchvision.utils.make_grid(images, nrow=int(num_samples ** 0.5), padding=2, pad_value=255)
-    torchvision.utils.save_image(images_concat, 'samples/epoch_{epoc}_{loss}.png'.format(epoc=epoch,loss=int(loss_meter.avg)))
+    torchvision.utils.save_image(images_concat, filename)
     return loss_meter.avg
 
 
