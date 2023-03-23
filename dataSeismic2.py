@@ -45,6 +45,7 @@ class SeismicImageDataset(Dataset):
         return image, label
     
 
+
 # Custom Dataset Partition
 batch_size = 128
 transform = T.Compose([T.Resize((32 , 32)),
@@ -54,7 +55,23 @@ transform = T.Compose([T.Resize((32 , 32)),
                        #,T.Normalize(data_mean, data_std, inplace=False) 
                      ])
 
-full_dataset = SeismicImageDataset(ct.TEST_NOT_NULLCSV,ct.TRAIN_IMAGE_DIR, transform)
+transformV = T.Compose([T.Resize((32 , 32)),
+                       T.Grayscale(num_output_channels=1),
+                       T.ToTensor()
+                       #,T.Normalize(data_mean, data_std, inplace=False) 
+                     ])
+
+# Use ImageFolder to create dataset(s)
+from torchvision import datasets
+full_dataset = datasets.ImageFolder(root=r"E:\Luciano\_0PH\Datasets\tgs-salt\test\images", # target folder of images
+                                  transform=transform, # transforms to perform on data (images)
+                                  target_transform=None) # transforms to perform on labels (if necessary)
+
+#test_data = datasets.ImageFolder(root=r"E:\Luciano\_0PH\Datasets\tgs-salt\train\images", 
+#                                 transform=transformV)
+
+#full_dataset = SeismicImageDataset(ct.TEST_NOT_NULLCSV,ct.TRAIN_IMAGE_DIR, transform)
+
 dataset_size = len(full_dataset)
 validation_split = .15
 random_seed= 42
@@ -80,13 +97,13 @@ train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 valid_loader = DataLoader(valid_dataset, batch_size=batch_size)
 
 # Creating data indices for training and validation splits:
-indices = list(range(dataset_size))
-train_indices, val_indices = indices[split:], indices[:split]
+#indices = list(range(dataset_size))
+#train_indices, val_indices = indices[split:], indices[:split]
 
 # Creating PT data samplers and loaders:
 # Exclude the validation batch from the training data
-train_sampler = SubsetRandomSampler(train_indices)
-valid_sampler = SubsetRandomSampler(val_indices)
+#train_sampler = SubsetRandomSampler(train_indices)
+#valid_sampler = SubsetRandomSampler(val_indices)
 
 #train_loader = DataLoader(full_dataset, batch_size=batch_size, sampler=train_sampler)
 #valid_loader = DataLoader(full_dataset, batch_size=batch_size, sampler=valid_sampler)

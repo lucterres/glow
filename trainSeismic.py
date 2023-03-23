@@ -15,7 +15,7 @@ import torchvision
 import torchvision.transforms as transforms
 from models.glow import glow1channelGray
 import util
-import dataSeismic as ds
+import dataSeismic2 as ds
 
 from models import Glow
 from tqdm import tqdm
@@ -51,7 +51,7 @@ def main(args):
 
     # Model
     print('Building model..')
-    net = glow1channelGray(num_channels=args.num_channels,
+    net = Glow(num_channels=args.num_channels,
                num_levels=args.num_levels,
                num_steps=args.num_steps)
     net = net.to(device)

@@ -21,8 +21,10 @@ import util
 from models import Glow
 from tqdm import tqdm
 
+import dir_local as dl
 
-root = r"E:\Luciano\_0PH\Datasets\CIFAR"
+
+root = dl.root
 
 
 def main(args):
@@ -48,14 +50,17 @@ def main(args):
 
     import torch.utils.data as data_utils
 
-    indices = torch.arange(10000)
-    trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=False, transform=transform_train)
+    trainMax= int(50000/args.batch_size)*args.batch_size
+    testMax = int(10000/args.batch_size)*args.batch_size
+
+    indices = torch.arange(trainMax)
+    trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=True, transform=transform_train)
     trainset = data_utils.Subset(trainset, indices)
 
     trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
-    testset = torchvision.datasets.CIFAR10(root=root, train=False, download=False, transform=transform_test)
-    indices = torch.arange(2000)
+    testset = torchvision.datasets.CIFAR10(root=root, train=False, download=True, transform=transform_test)
+    indices = torch.arange(testMax)
     testset = data_utils.Subset(testset, indices)
     testloader = data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
 
@@ -151,12 +156,13 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
             z, sldj = net(x, reverse=False)
             loss = loss_fn(z, sldj)
             loss_meter.update(loss.item(), x.size(0))
-            progress_bar.set_postfix(nll=loss_meter.avg,
-                                     bpd=util.bits_per_dim(x, loss_meter.avg))
+            progress_bar.set_postfix(nll=loss_meter.avg, bpd=util.bits_per_dim(x, loss_meter.avg))
             progress_bar.update(x.size(0))
 
     # Save checkpoint
+    best=""
     if loss_meter.avg < best_loss:
+        best="_best"
         print('Saving...')
         state = {
             'net': net.state_dict(),
@@ -168,10 +174,13 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
         best_loss = loss_meter.avg
 
     # Save samples and data
+    folder = "z:/experiment/samples"+ str(int(1000*random.random()))
+    filename = folder + '/e{}_l{}{}.png'.format(epoch,str(int(loss_meter.avg)),best)
     images = sample(net, num_samples, device)
-    os.makedirs('samples', exist_ok=True)
+
+    os.makedirs(folder, exist_ok=True)
     images_concat = torchvision.utils.make_grid(images, nrow=int(num_samples ** 0.5), padding=2, pad_value=255)
-    torchvision.utils.save_image(images_concat, 'samples/epoch_{}.png'.format(epoch))
+    torchvision.utils.save_image(images_concat, filename)
     return loss_meter.avg
 
 
