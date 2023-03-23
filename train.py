@@ -25,6 +25,7 @@ import dir_local as dl
 
 
 root = dl.root
+folder = dl.folder
 
 
 def main(args):
@@ -174,7 +175,7 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
         best_loss = loss_meter.avg
 
     # Save samples and data
-    folder = "z:/experiment/samples"+ str(int(1000*random.random()))
+    
     filename = folder + '/e{}_l{}{}.png'.format(epoch,str(int(loss_meter.avg)),best)
     images = sample(net, num_samples, device)
 
