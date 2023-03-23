@@ -24,7 +24,7 @@ from tqdm import tqdm
 import dir_local as dl
 
 
-root = 'data'
+root = dl.root
 folder = dl.folder
 
 
