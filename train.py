@@ -53,7 +53,7 @@ def main(args):
 
     import torch.utils.data as data_utils
     
-    expectSampleSize=10000
+    expectSampleSize=20000
 
     trainMax= int(expectSampleSize/args.batch_size)*args.batch_size
     testMax = int(expectSampleSize/5/args.batch_size)*args.batch_size
@@ -102,11 +102,12 @@ def main(args):
         lastLossAvg = test(epoch, net, testloader, device, loss_fn, args.num_samples)
         stopCheck = lastLossAvg / best_loss
         if stopCheck>1000:
-            print ("Divergindo... Criterio de Parada Atingido")
+            stop=stop+1
+            print ("Divergindo... Criterio de Parada Atingido " , stop)
             if stop>2:
                 print ("Divergiu varias vezes: ", stop)
                 break 
-            stop=+1
+            
     return stop
 
 @torch.enable_grad()
