@@ -52,17 +52,19 @@ def main(args):
     ])
 
     import torch.utils.data as data_utils
+    
+    expectSampleSize=10000
 
-    trainMax= int(50000/args.batch_size)*args.batch_size
-    testMax = int(10000/args.batch_size)*args.batch_size
+    trainMax= int(expectSampleSize/args.batch_size)*args.batch_size
+    testMax = int(expectSampleSize/5/args.batch_size)*args.batch_size
 
     indices = torch.arange(trainMax)
-    trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=False, transform=transform_train)
+    trainset = torchvision.datasets.CIFAR10(root=root, train=True, download=True, transform=transform_train)
     trainset = data_utils.Subset(trainset, indices)
 
     trainloader = data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
-    testset = torchvision.datasets.CIFAR10(root=root, train=False, download=False, transform=transform_test)
+    testset = torchvision.datasets.CIFAR10(root=root, train=False, download=True, transform=transform_test)
     indices = torch.arange(testMax)
     testset = data_utils.Subset(testset, indices)
     testloader = data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=args.num_workers)
