@@ -25,9 +25,6 @@ import dir_local as dl
 
 
 root = dl.root
-folder = dl.folder + str(int(1000*random.random()))
-
-print ("Saida na pasta: ", folder )
 
 
 def main(args):
@@ -217,6 +214,8 @@ if __name__ == '__main__':
     global_step = 0
 
     for i in range(10):
+        folder = dl.folder + str(int(1000*random.random()))
+        print ("Saida na pasta: ", folder )
         stop = main(parser.parse_args())
         if stop<2:
             break
