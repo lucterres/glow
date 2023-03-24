@@ -103,10 +103,11 @@ def main(args):
         stopCheck = lastLossAvg / best_loss
         if stopCheck>1000:
             print ("Divergindo... Criterio de Parada Atingido")
-            if stop>4:
+            if stop>2:
                 print ("Divergiu varias vezes: ", stop)
                 break 
             stop=+1
+    return stop
 
 @torch.enable_grad()
 def train(epoch, net, trainloader, device, optimizer, scheduler, loss_fn, max_grad_norm):
@@ -214,4 +215,7 @@ if __name__ == '__main__':
     best_loss = 1500000
     global_step = 0
 
-    main(parser.parse_args())
+    for i in range(10):
+        stop = main(parser.parse_args())
+        if stop==0:
+            break
