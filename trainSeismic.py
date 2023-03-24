@@ -13,12 +13,12 @@ import torch.backends.cudnn as cudnn
 import torch.utils.data as data
 import torchvision
 import torchvision.transforms as transforms
-from models.glow import glow1channelGray
+from models.glow import glow1channelGray as g1
 import util
 import dataSeismic2 as ds
 
-from models import Glow
 from tqdm import tqdm
+import dir_local as dl
 
 
 def main(args):
@@ -51,7 +51,7 @@ def main(args):
 
     # Model
     print('Building model..')
-    net = Glow(num_channels=args.num_channels,
+    net = g1.Glow(num_channels=args.num_channels,
                num_levels=args.num_levels,
                num_steps=args.num_steps)
     net = net.to(device)
@@ -75,16 +75,29 @@ def main(args):
     loss_fn = util.NLLLoss().to(device)
     optimizer = optim.Adam(net.parameters(), lr=args.lr)
     scheduler = sched.LambdaLR(optimizer, lambda s: min(1., s / args.warm_up))
-
+    stop=0
+    general = 0
     for epoch in range(start_epoch, start_epoch + args.num_epochs):
-        train(epoch, net, trainloader, device, optimizer, scheduler,
+        trainLossAvg = train(epoch, net, trainloader, device, optimizer, scheduler,
               loss_fn, args.max_grad_norm)
-        lastLossAvg = test(epoch, net, testloader, device, loss_fn, args.num_samples)
+        lastLossAvg  = test(epoch, net, testloader, device, loss_fn, args.num_samples)
         stopCheck = lastLossAvg / best_loss
-        if stopCheck>100:
-            print ("Divergindo... Criterio de Parada Atingido")
-            #break
+        generalCheck = lastLossAvg / trainLossAvg
+        if generalCheck >1000:
+            general=general+1
+            print ("Divergindo no generalização... Criterio de Parada, n vezes " , general)
+            if general>2:
+                print ("Não generalizando bem: ", general)
+                break 
 
+        if stopCheck>1000:
+            stop=stop+1
+            print ("Divergindo no teste... Criterio de Parada, n vezes " , stop)
+            if stop>2:
+                print ("Divergiu no teste n vezes: ", stop)
+                break 
+            
+    return stop
 
 @torch.enable_grad()
 def train(epoch, net, trainloader, device, optimizer, scheduler, loss_fn, max_grad_norm):
@@ -110,6 +123,7 @@ def train(epoch, net, trainloader, device, optimizer, scheduler, loss_fn, max_gr
                                      lr=optimizer.param_groups[0]['lr'])
             progress_bar.update(x.size(0))
             global_step += x.size(0)
+    return loss_meter.avg
 
 
 @torch.no_grad()
@@ -139,27 +153,32 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
             z, sldj = net(x, reverse=False)
             loss = loss_fn(z, sldj)
             loss_meter.update(loss.item(), x.size(0))
-            progress_bar.set_postfix(nll=loss_meter.avg,
-                                     bpd=util.bits_per_dim(x, loss_meter.avg))
+            progress_bar.set_postfix(nll=loss_meter.avg, bpd=util.bits_per_dim(x, loss_meter.avg))
             progress_bar.update(x.size(0))
 
     # Save checkpoint
+    best=""
     if loss_meter.avg < best_loss:
+        best="_best"
         print('Saving...')
         state = {
             'net': net.state_dict(),
             'test_loss': loss_meter.avg,
             'epoch': epoch,
         }
-        os.makedirs('ckpts', exist_ok=True)
-        torch.save(state, 'ckpts/best.pth.tar')
+      
+        os.makedirs(folder+'/ckpts', exist_ok=True)
+        torch.save(state, folder+'/ckpts/best.pth.tar')
         best_loss = loss_meter.avg
 
     # Save samples and data
+    
+    filename = folder + '/E{}_L{}{}.png'.format(epoch,str(int(loss_meter.avg)),best)
     images = sample(net, num_samples, device)
-    os.makedirs('samples', exist_ok=True)
+
+    os.makedirs(folder, exist_ok=True)
     images_concat = torchvision.utils.make_grid(images, nrow=int(num_samples ** 0.5), padding=2, pad_value=255)
-    torchvision.utils.save_image(images_concat, 'samples/epoch_{}.png'.format(epoch))
+    torchvision.utils.save_image(images_concat, filename)
     return loss_meter.avg
 
 
@@ -186,5 +205,12 @@ if __name__ == '__main__':
 
     best_loss = 1500000
     global_step = 0
+    args = parser.parse_args()
 
-    main(parser.parse_args())
+    for i in range(10):
+        folder = dl.folder + str(int(1000*random.random()))
+        print ("Saida na pasta: ", folder )
+        stop = main(args)
+        
+        if stop<2:
+            break
