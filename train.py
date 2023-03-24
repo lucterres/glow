@@ -27,6 +27,8 @@ import dir_local as dl
 root = dl.root
 folder = dl.folder + str(int(1000*random.random()))
 
+print ("Saida na pasta: ", folder )
+
 
 def main(args):
     # Set up main device and scale batch size
@@ -170,13 +172,14 @@ def test(epoch, net, testloader, device, loss_fn, num_samples):
             'test_loss': loss_meter.avg,
             'epoch': epoch,
         }
-        os.makedirs('ckpts', exist_ok=True)
-        torch.save(state, 'ckpts/best.pth.tar')
+      
+        os.makedirs(folder+'/ckpts', exist_ok=True)
+        torch.save(state, folder+'/ckpts/best.pth.tar')
         best_loss = loss_meter.avg
 
     # Save samples and data
     
-    filename = folder + '/e{}_l{}{}.png'.format(epoch,str(int(loss_meter.avg)),best)
+    filename = folder + '/E{}_L{}{}.png'.format(epoch,str(int(loss_meter.avg)),best)
     images = sample(net, num_samples, device)
 
     os.makedirs(folder, exist_ok=True)
@@ -200,7 +203,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_levels', '-L', default=3, type=int, help='Number of levels in the Glow model')
     parser.add_argument('--num_steps', '-K', default=32, type=int, help='Number of steps of flow in each level')
     parser.add_argument('--num_epochs', default=100, type=int, help='Number of epochs to train')
-    parser.add_argument('--num_samples', default=25, type=int, help='Number of samples at test time')
+    parser.add_argument('--num_samples', default=64, type=int, help='Number of samples at test time')
     parser.add_argument('--num_workers', default=8, type=int, help='Number of data loader threads')
     parser.add_argument('--resume', type=str2bool, default=False, help='Resume from checkpoint')
     parser.add_argument('--seed', type=int, default=0, help='Random seed for reproducibility')
