@@ -217,5 +217,5 @@ if __name__ == '__main__':
 
     for i in range(10):
         stop = main(parser.parse_args())
-        if stop==0:
+        if stop<2:
             break
