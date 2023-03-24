@@ -93,16 +93,25 @@ def main(args):
     optimizer = optim.Adam(net.parameters(), lr=args.lr)
     scheduler = sched.LambdaLR(optimizer, lambda s: min(1., s / args.warm_up))
     stop=0
+    general = 0
     for epoch in range(start_epoch, start_epoch + args.num_epochs):
-        train(epoch, net, trainloader, device, optimizer, scheduler,
+        trainLossAvg = train(epoch, net, trainloader, device, optimizer, scheduler,
               loss_fn, args.max_grad_norm)
-        lastLossAvg = test(epoch, net, testloader, device, loss_fn, args.num_samples)
+        lastLossAvg  = test(epoch, net, testloader, device, loss_fn, args.num_samples)
         stopCheck = lastLossAvg / best_loss
+        generalCheck = lastLossAvg / trainLossAvg
+        if generalCheck >1000:
+            general=general+1
+            print ("Divergindo no generalização... Criterio de Parada, n vezes " , general)
+            if general>2:
+                print ("Não generalizando bem: ", general)
+                break 
+
         if stopCheck>1000:
             stop=stop+1
-            print ("Divergindo... Criterio de Parada Atingido " , stop)
+            print ("Divergindo no teste... Criterio de Parada, n vezes " , stop)
             if stop>2:
-                print ("Divergiu varias vezes: ", stop)
+                print ("Divergiu no teste n vezes: ", stop)
                 break 
             
     return stop
@@ -131,6 +140,7 @@ def train(epoch, net, trainloader, device, optimizer, scheduler, loss_fn, max_gr
                                      lr=optimizer.param_groups[0]['lr'])
             progress_bar.update(x.size(0))
             global_step += x.size(0)
+    return loss_meter.avg
 
 
 @torch.no_grad()
@@ -212,10 +222,14 @@ if __name__ == '__main__':
 
     best_loss = 1500000
     global_step = 0
+    args = parser.parse_args()
+
+
 
     for i in range(10):
         folder = dl.folder + str(int(1000*random.random()))
         print ("Saida na pasta: ", folder )
-        stop = main(parser.parse_args())
+        stop = main(args)
+        
         if stop<2:
             break
