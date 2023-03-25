@@ -15,7 +15,7 @@ import torchvision
 import torchvision.transforms as transforms
 from models.glow import glow1channelGray as g1
 import util
-import dataSeismic2 as ds
+import dataSeismic as ds
 
 from tqdm import tqdm
 import dir_local as dl
@@ -33,21 +33,12 @@ def main(args):
     torch.cuda.manual_seed_all(args.seed)
 
     # No normalization applied, since Glow expects inputs in (0, 1)
-    transform_train = transforms.Compose([
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor()
-    ])
-
-    transform_test = transforms.Compose([
-        transforms.ToTensor()
-    ])
 
     trainset = ds.train_dataset 
     trainloader = ds.train_loader 
 
-
-    testset = ds.valid_dataset
-    testloader = ds.valid_loader
+    testset = ds.test_dataset
+    testloader = ds.test_loader
 
     # Model
     print('Building model..')

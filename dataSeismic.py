@@ -6,7 +6,7 @@ from PIL import Image
 import pandas as pd
 import numpy as np
 import os
-import dir_local as ct
+import dir_local as dl
 
 #Seismic image parameters
 data_mean = 0.4746
@@ -54,39 +54,16 @@ transform = T.Compose([T.Resize((32 , 32)),
                        #,T.Normalize(data_mean, data_std, inplace=False) 
                      ])
 
-full_dataset = SeismicImageDataset(ct.TEST_NOT_NULLCSV,ct.TRAIN_IMAGE_DIR, transform)
-dataset_size = len(full_dataset)
-validation_split = .15
-random_seed= 42
-split = int(np.floor(dataset_size * validation_split))
+transformTest = T.Compose([T.Resize((32 , 32)),
+                       T.Grayscale(num_output_channels=1),
+                       T.ToTensor()
+                       #,T.Normalize(data_mean, data_std, inplace=False) 
+                     ])
 
-
-# new splitted datasets 
-# https://bit.ly/3kyZooA   How to split a custom dataset into training and test datasets
-valid_split = split
-train_split = dataset_size - split
-train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_split, valid_split])
-
-# Sample a fixed batch of 200 validation examples (split=validationSamples)
-#val_x, val_l = zip(*list(valid_dataset[i] for i in range(split)))
-#val_x = torch.stack(val_x, 0).cuda()
-#val_l = torch.LongTensor(val_l).cuda()
-
-# Add the noise-augmentation to the training data only:
-#train_dataset.transform = T.Compose([train_dataset.transform, T.Lambda(noise)])   
+train_dataset = SeismicImageDataset(dl.TRAIN_NOT_NULLCSV,dl.TRAIN_IMAGE_DIR, transform)
+test_dataset = SeismicImageDataset(dl.TEST_NOT_NULLCSV,dl.TRAIN_IMAGE_DIR, transformTest)
 
 # create batches loader
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-valid_loader = DataLoader(valid_dataset, batch_size=batch_size)
+test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
-# Creating data indices for training and validation splits:
-indices = list(range(dataset_size))
-train_indices, val_indices = indices[split:], indices[:split]
-
-# Creating PT data samplers and loaders:
-# Exclude the validation batch from the training data
-train_sampler = SubsetRandomSampler(train_indices)
-valid_sampler = SubsetRandomSampler(val_indices)
-
-#train_loader = DataLoader(full_dataset, batch_size=batch_size, sampler=train_sampler)
-#valid_loader = DataLoader(full_dataset, batch_size=batch_size, sampler=valid_sampler)
