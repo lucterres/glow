@@ -84,7 +84,7 @@ def main(args):
         if stopCheck>1000:
             stop=stop+1
             print ("Divergindo no teste... Criterio de Parada, n vezes " , stop)
-            if stop>2:
+            if stop>1:
                 print ("Divergiu no teste n vezes: ", stop)
                 break 
             
@@ -202,6 +202,3 @@ if __name__ == '__main__':
         folder = dl.folder + str(int(1000*random.random()))
         print ("Saida na pasta: ", folder )
         stop = main(args)
-        
-        if stop<2:
-            break

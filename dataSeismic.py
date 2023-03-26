@@ -45,8 +45,8 @@ class SeismicImageDataset(Dataset):
         return image, label
 
 # Custom Dataset Partition
-batch = 64
-resiz=(32,32)
+batch = 45
+resiz=(64,64)
 workers = 16
 
 transform = T.Compose([T.Resize(resiz),
@@ -63,7 +63,7 @@ transformTest = T.Compose([T.Resize(resiz),
                      ])
 
 train_dataset = SeismicImageDataset(dl.TRAIN_NOT_NULLCSV,dl.TRAIN_IMAGE_DIR, transform)
-test_dataset = SeismicImageDataset(dl.TEST_NOT_NULLCSV,dl.TRAIN_IMAGE_DIR, transformTest)
+test_dataset  = SeismicImageDataset(dl.TEST_NOT_NULLCSV, dl.TRAIN_IMAGE_DIR, transformTest)
 
 # create batches loader
 train_loader = DataLoader(train_dataset, batch_size=batch, shuffle=True , num_workers=workers)

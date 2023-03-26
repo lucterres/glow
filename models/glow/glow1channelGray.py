@@ -26,7 +26,7 @@ class Glow(nn.Module):
 
         # Use bounds to rescale images before converting to logits, not learned
         self.register_buffer('bounds', torch.tensor([0.9], dtype=torch.float32))
-        self.flows = _Glow(in_channels=4,  # RGB image after squeeze
+        self.flows = _Glow(in_channels=4 * 1,  # RGB 4*3 // Gray 4*1 -> image after squeeze 
                            mid_channels=num_channels,
                            num_levels=num_levels,
                            num_steps=num_steps)
